@@ -1,0 +1,58 @@
+---
+- name: Install EPEL on Amazon Linux
+  command: sudo amazon-linux-extras install epel -y
+  tags: client
+
+- name: Install EPEL Release repo
+  yum: name=epel-release state=installed
+  tags: client
+
+- name: Install nagios Client on server
+  yum: name=nrpe state=installed
+  tags: client
+
+- name: Install NTP service
+  yum: name=ntp state=installed
+  tags: client
+
+- name: start ntp service
+  service: name=ntpd state=started enabled=yes
+  tags: client
+
+- name: Replace Default NRPE.CFG file in server
+  copy: src=nrpe.cfg dest=/etc/nagios/nrpe.cfg force=yes owner=root group=root mode=0755
+  tags: client
+
+- copy:
+    src: "{{ item }}"
+    dest: /usr/lib64/nagios/plugins/
+    owner: root
+    mode: 765
+  with_fileglob:
+    - check_*
+  tags: client
+
+- name: Copy check_ntp plugin to client servers
+  copy: src=check_ntp dest=/usr/lib64/nagios/plugins/check_ntp force=yes owner=root group=root mode=0765
+  tags: client
+  notify:
+     - Restart nrpe service
+
+- name: Add NTP monitoring to nrpe.cfg
+  lineinfile: dest=/etc/nagios/nrpe.cfg line="command[check_ntp]=/usr/lib64/nagios/plugins/check_ntp 5 10"
+  tags: client
+  notify:
+    - Restart nrpe service
+ 
+- name: create {{ ansible_hostname }}.cfg in under /usr/local/nagios/etc/servers/
+  copy:
+    content: ""
+    dest: /usr/local/nagios/etc/servers/{{ inventory_hostname }}.cfg
+    force: no
+    mode: u+rw,g-wx,o-rwx
+  tags: master
+
+- name: Here we are displaying the inventory_hostname and ansible_hostname values.
+  debug:
+    msg: "ansible_hostname = {{ ansible_hostname }} and  inventory_hostname = {{ inventory_hostname }}"
+  tags: debug

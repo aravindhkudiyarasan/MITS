@@ -1,0 +1,59 @@
+#!/bin/sh
+#
+
+
+# Checks if the ntp service synchronises to the server time, gives ntp server IP and jitter and offset.
+
+case $1 in
+  --help | -h )
+        echo "Usage: check_ntp [warn] [crit]"
+        echo " [warn] and [crit] as int (Miliseconds)"
+        echo " Example: check_ntp 10 20 "
+        exit 3
+         ;;
+  * )
+    ;;
+esac
+
+warn=$1
+crit=$2
+
+if [ ! "$1" -o ! "$2"  ]; then
+        echo "Usage: check_ntp [warn] [crit]"
+        echo " [warn] and [crit] as int (Miliseconds)"
+        echo " Example: check_ntp 10 20"
+fi
+
+#Check service ntp
+CHECK_SERVICE=`systemctl status  ntpd.service   | grep Active | awk -F '(' '{print $2 }' | awk -F ')' '{print $1}'`
+if [[ $CHECK_SERVICE == 'dead' ]]
+then
+        echo 'CRITICAL - Service is not running'
+        exit 2
+else
+
+PEER=$(ntpq -pn | grep -F '*' | awk '{print $1}' | cut -d "*" -f 2)
+
+OFFSET=$(ntpq -pn | grep -F '*' | awk '{print $9}' | cut -d "-" -f 2 )
+
+JITTER=$(ntpq -pn | grep -F '*' | awk '{print $10}')
+
+intoffset=${OFFSET%.*}
+
+graphoffset=$( printf "%.0f" $OFFSET )
+
+#check the thresholds
+if [[ $intoffset -gt $1  ]] && [[ $intoffset -lt $2  ]]; then
+        echo "NTP Warning - Server: $PEER Offset: $OFFSET Jitter: $JITTER; | Offset=$OFFSET"ms";$1;$2 Jitter=$JITTER"ms";;"
+        exit 1
+elif [[ $intoffset -ge $2 ]]; then
+        echo "NTP Critical - Server: $PEER Offset: $OFFSET Jitter: $JITTER; | $OFFSET"ms";$1;$2 Jitter=$JITTER"ms";;"
+        exit 2
+else
+        echo "NTP OK - Server: $PEER Offset: $OFFSET Jitter: $JITTER; | Offset=$OFFSET"ms";$1;$2 Jitter=$JITTER"ms";;"
+        exit 0
+fi
+
+
+fi
+

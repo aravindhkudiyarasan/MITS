@@ -1,0 +1,6 @@
+---
+  - name: "Setting Up Master Host for enabling NTP Connections"
+    hosts: all
+    connection: local 
+    roles:
+      - ntp

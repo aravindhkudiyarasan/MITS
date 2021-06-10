@@ -1,0 +1,120 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  DataNode1:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      AvailabilityZone: ap-south-1b
+      ImageId: ami-0bcf5425cdc1d8a85
+      InstanceType: t2.micro
+      SubnetId: subnet-247b3568
+      KeyName: Subdomain
+      SecurityGroupIds:
+        - sg-0b26f81b6a92aed12
+      Tags:
+        - Key: APP_ID
+          Value: 1827
+        - Key: COST_CENTER
+          Value: 30144
+        - Key: CREATOR_ID
+          Value: schawkins
+        - Key: CreatorId
+          Value: AROAWR4P3RUWZUJSE6H7A
+        - Key: Name
+          Value: CDH-5-DataNode1
+        - Key: CDH
+          Value: DEV-5.16
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvdh
+          Ebs:
+            VolumeSize: 2
+            DeleteOnTermination: true
+
+        - DeviceName: /dev/xvdi
+          Ebs:
+            VolumeSize: 2
+           # VolumeType: gp2
+            DeleteOnTermination: true
+            
+      UserData: 
+        Fn::Base64: |
+            #!/bin/bash -xe
+            echo "I am a testfile from DataNode1" > /tmp/testfile
+            mkfs -t xfs /dev/xvdh
+            echo "/dev/xvdh     /opt          xfs    defaults,nofail 0       2" >> /etc/fstab
+            mkfs -t xfs /dev/xvdi
+            echo "/dev/xvdi      /opt/dfs      xfs    defaults,nofail 0       2" >> /etc/fstab
+            mount /opt
+            mkdir /opt/dfs
+            mount -a
+            yum install -y nmap-ncat.x86_64
+            yum install -y mlocate.x86_64
+            yum install -y java-1.8.0-openjdk.x86_64
+            yum install -y java-1.8.0-openjdk-debug.x86_64
+            yum install -y java-1.8.0-openjdk-devel.x86_64
+            yum install -y java-1.8.0-openjdk-devel.i686
+            yum install -y java-1.8.0-openjdk-headless.x86_64
+            yum install -y java-1.8.0-openjdk-headless.i686
+            yum install -y java-1.8.0-openjdk-headless-debug.x86_64
+            updatedb &
+            yum install -y httpd
+            service httpd start
+            echo "I am from $hostname" > /var/www/html
+  DataNode2:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      AvailabilityZone: ap-south-1b
+      ImageId: ami-0bcf5425cdc1d8a85
+      InstanceType: t2.micro
+      SubnetId: subnet-247b3568
+      KeyName: Subdomain
+      SecurityGroupIds:
+        - sg-0b26f81b6a92aed12
+      Tags:
+        - Key: APP_ID
+          Value: 1827
+        - Key: COST_CENTER
+          Value: 30144
+        - Key: CREATOR_ID
+          Value: schawkins
+        - Key: CreatorId
+          Value: AROAWR4P3RUWZUJSE6H7A
+        - Key: Name
+          Value: CDH-5-DataNode2
+        - Key: CDH
+          Value: DEV-5.16
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvdh
+          Ebs:
+            VolumeSize: 3
+            DeleteOnTermination: true
+
+        - DeviceName: /dev/xvdi
+          Ebs:
+            VolumeSize: 3
+           # VolumeType: gp2
+            DeleteOnTermination: true
+            
+      UserData: 
+        Fn::Base64: |
+            #!/bin/bash -xe
+            echo "I am a testfile from DataNode1" > /tmp/testfile
+            mkfs -t xfs /dev/xvdh
+            echo "/dev/xvdh   /opt          xfs    defaults,nofail 0       2" >> /etc/fstab
+            mkfs -t xfs /dev/xvdi
+            echo "/dev/xvdi     /opt/dfs      xfs    defaults,nofail 0       2" >> /etc/fstab
+            mount /opt
+            mkdir /opt/dfs
+            mount -a
+            yum install -y nmap-ncat.x86_64
+            yum install -y mlocate.x86_64
+            yum install -y java-1.8.0-openjdk.x86_64
+            yum install -y java-1.8.0-openjdk-debug.x86_64
+            yum install -y java-1.8.0-openjdk-devel.x86_64
+            yum install -y java-1.8.0-openjdk-devel.i686
+            yum install -y java-1.8.0-openjdk-headless.x86_64
+            yum install -y java-1.8.0-openjdk-headless.i686
+            yum install -y java-1.8.0-openjdk-headless-debug.x86_64
+            updatedb &
+            sudo yum install -y httpd
+            sudo service httpd start
+            echo "I am from $hostname" > /var/www/html

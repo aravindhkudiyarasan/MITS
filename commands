@@ -1,0 +1,24 @@
+:::::::::::::::::::::::commands For EBS:::::::::::::::::
+
+To check and mount filesystem:
+
+=> lsblk
+=> file -s /dev/xvdf
+
+=> mkfs -t xfs /dev/xvdf
+=> file -s /dev/xvdf
+
+=> cd /apps
+
+=> mkdir -p /apps/volume/new-volume
+
+=> mount /dev/xvdf/apps/volume/new-volume
+
+=> df -h 
+
+To increase the ebs size 
+
+ =>  xfs_growfs /dev/xvdf (or) resize2fs /dev/xvdf
+ 
+ => df -h 
+
